@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+</head>
+  <body>
+    <h2>Authorize bot</h2>
+    <form method="post" action="/api/setup">
+        <label for="username">Enter Username:</label>
+        <input type="text" id="username" name="username" value="witsz">
+        <label for="channel">Enter Channel Name:</label>
+        <input type="text" id="channel" name="channel" value="witsz">
+        <input type="text" id="store" name="store" value="witsz">
+        <input type="submit" value="join"/>
+    </form>
+        <a target="_blank" href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=http://localhost:3000/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=witsz">join</a>
+
+
+    <h2>Announcement Giveaway</h2>
+    <form method="post" action="/api/giveaway-announcement">
+      <label for="name">message:</label>
+      <input type="text" id="message" name="message">
+      <label for="channel">channel:</label>
+      <input type="text" id="channel" name="channel">
+      <label for="code">code</label>
+      <input type="text" id="code" name="code">
+      
+      <button type="submit">Submit</button>
+    </form>
+
+    <h2>Claim Gift</h2>
+    <h3>login page</h3>
+    Click <a href="/">here</a> to claim your gift
+
+  </body>
+</html>
+

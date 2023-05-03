@@ -2,6 +2,7 @@ const express = require('express');
 const tmi = require('tmi.js');
 const axios = require('axios');
 require('dotenv').config()
+const path = require('path');
 
 
 
@@ -18,7 +19,10 @@ const token = {
 
 
 const app = express()
-
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 // var list_of_users_who_enter = []
 // var winner=null
@@ -59,8 +63,9 @@ async function fetchToken (code){
 
         return tokenResponse = JSON.parse(JSON.stringify(responseBody))
 
-    }).catch(function (error) {
+    }).catch(async function (error) {
         console.log(error)
+        return await error
     })
 }
 
@@ -91,10 +96,12 @@ async function connect(access_token,state){
         
     } catch (error) {
         console.log(error)
+        await error
     }
 
     clients[state].client = client
     clients[state].access_token = access_token
+
 
 }
 
@@ -284,9 +291,9 @@ app.get('/api/auth', (req, res) => {
     const state = req.query.state
     clients[state] = {"username":username,"channel":channel,"store":store,"state":state}
     var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
-    html += `<br><a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=http://localhost:3000/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect 2</a>`
-    html += `<br><a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=http://localhost:8080/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect 2</a>`
-    res.send(html)
+    const link = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}`;
+    // res.send(html)
+    res.render(path.join(`join.html`),{link:link})
 })
 
 app.get('/api/join', async (req, res) => {
@@ -299,17 +306,12 @@ app.get('/api/join', async (req, res) => {
     console.log("state:"+state)
     
     await connect(access_token,state)
-
-    res.status(200).send(`connected ${access_token} state ${state}
-    <form method="get" action="/api/announce-giveaway">
-        <label>Gifter name </label>
-        <input type="text" name="gifter" value="steve">
-        <label>Product name </label>
-        <input type="text" name="product" value="bagle">
-        <input type="text" name="state" value="${state}">
-        <input type="text" name="access_token" value="${access_token}" >
-        <input type="submit" value="submit">
-    </form>`)
+    
+    const data = {
+        access_token:access_token,
+        state:state
+    }
+    res.status(200).json(data)
 })
 
 app.get('/api/announce-giveaway', async (req, res) => {
@@ -320,9 +322,36 @@ app.get('/api/announce-giveaway', async (req, res) => {
 
     if(clients[state].access_token == access_token){
         result = await announceGiveAway(gifter,product,access_token,state)
-        res.status(200).send('give away announcement sent')
+        const data = {
+            message:"success"
+        }
+        res.status(200).json(data)
+    }else{
+        const data = {
+            message:"failed announcement, invalid access token"
+        }
+        res.status(400).json(data)
     }
+})
 
+
+app.get('/api/claim', async (req, res) => {
+    const product = req.query.product
+    const state = req.query.state
+    const access_token = req.query.access_token
+
+    if(clients[state].access_token == access_token){
+        result = await announceClaim(product,access_token,state)
+        const data = {
+            message:"success"
+        }
+        res.status(200).json(data)
+    }else{
+        const data = {
+            message:"failed announcement, invalid access token"
+        }
+        res.status(400).json(data)
+    }
 })
 
 
