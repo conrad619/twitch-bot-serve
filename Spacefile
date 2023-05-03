@@ -3,5 +3,14 @@ micros:
   - name: node-micro
     src: ./
     engine: nodejs16
-    dev: nodemon index.js
+    dev: node index.js
     run: "node index.js"
+    presets:
+      env:
+        - name: CLIENT_ID
+          description: client id
+          default: "9egbqe7dfh8hb291qvxmhykqamhu29"
+        - name: CLIENT_SECRET
+          description: client secret
+          default: "7mozwp9av5zrqe6dmx3emp7xjei3qx"
+    public: true
