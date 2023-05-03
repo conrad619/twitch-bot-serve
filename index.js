@@ -28,7 +28,9 @@ const app = express()
 var clients = []
 // var redirect_uri = "http://localhost:3000"
 // var redirect_uri = "http://localhost:8080"
-var redirect_uri = "https://twitchbotserve-1-e4702823.deta.app"
+// var redirect_uri = "https://twitchbotserve-1-e4702823.deta.app"
+var redirect_uri = "https://twitch-dmdn.onrender.com/"
+
 
 /*
 
