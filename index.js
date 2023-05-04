@@ -289,11 +289,12 @@ app.get('/api/auth', (req, res) => {
     const channel = req.query.channel
     const store = req.query.store
     const state = req.query.state
+    console.log("username:"+username)
     var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
     const link = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}`;
     // res.send(html)
     // res.render(path.join(`join.html`),{link:link})
-    if(username && channel && store && state){
+    if(username != undefined && channel != undefined && store != undefined && state != undefined    ){
         clients[state] = {"username":username,"channel":channel,"store":store,"state":state}
 
         const data = {
