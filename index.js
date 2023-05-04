@@ -289,11 +289,21 @@ app.get('/api/auth', (req, res) => {
     const channel = req.query.channel
     const store = req.query.store
     const state = req.query.state
-    clients[state] = {"username":username,"channel":channel,"store":store,"state":state}
     var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
     const link = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}`;
     // res.send(html)
-    res.render(path.join(`join.html`),{link:link})
+    // res.render(path.join(`join.html`),{link:link})
+    if(username && channel && store && state){
+        clients[state] = {"username":username,"channel":channel,"store":store,"state":state}
+
+        const data = {
+            message: "success",
+            link: link
+        }
+        res.status(200).json(data)
+    }else{
+        res.status(400).send("username, channel, store and state are required")
+    }
 })
 
 app.get('/api/join', async (req, res) => {
@@ -304,14 +314,18 @@ app.get('/api/join', async (req, res) => {
     const access_token = await (await fetchToken(code)).access_token
     console.log("accesstoken:"+access_token)
     console.log("state:"+state)
-    
-    await connect(access_token,state)
-    
-    const data = {
-        access_token:access_token,
-        state:state
+    if(access_token){
+        await connect(access_token,state)
+
+        const data = {
+            access_token:access_token,
+            state:state
+        }
+        res.status(200).json(data)
+    }else{
+        res.status(400).send("failed to fetch access token, code invalid")
     }
-    res.status(200).json(data)
+    
 })
 
 app.get('/api/announce-giveaway', async (req, res) => {
