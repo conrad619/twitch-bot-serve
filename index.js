@@ -3,6 +3,7 @@ const tmi = require('tmi.js');
 const axios = require('axios');
 require('dotenv').config()
 const path = require('path');
+const { stringify } = require('querystring');
 
 
 
@@ -30,10 +31,10 @@ app.set('view engine', 'html');
 // var timerCountToWinner=5000
 // var messages = []
 var clients = []
-// var redirect_uri = "http://localhost:3000"
+var redirect_uri = "http://localhost:3000"
 // var redirect_uri = "http://localhost:8080"
 // var redirect_uri = "https://twitchbotserve-1-e4702823.deta.app"
-var redirect_uri = "https://twitch-dmdn.onrender.com"
+// var redirect_uri = "https://twitch-dmdn.onrender.com"
 
 
 /*
@@ -289,13 +290,17 @@ app.get('/api/auth', (req, res) => {
     const channel = req.query.channel
     const store = req.query.store
     const state = req.query.state
-    console.log("username:"+username)
+    const session = req.query.session
+    const host = req.query.host
+    
+    console.log("username:%o",session)
+    console.log("username:%o",store)
     var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
     const link = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}`;
     // res.send(html)
     // res.render(path.join(`join.html`),{link:link})
     if(username != undefined && channel != undefined && store != undefined && state != undefined    ){
-        clients[state] = {"username":username,"channel":channel,"store":store,"state":state}
+        clients[state] = {"username":username,"channel":channel,"store":store,"state":state,"shopifyToken":session,"host":host}
 
         const data = {
             message: "success",
@@ -315,14 +320,39 @@ app.get('/api/join', async (req, res) => {
     const access_token = await (await fetchToken(code)).access_token
     console.log("accesstoken:"+access_token)
     console.log("state:"+state)
+
+
     if(access_token){
         await connect(access_token,state)
 
         const data = {
-            access_token:access_token,
-            state:state
+            auth_code:access_token,
+            state:state,
+            channel:clients[state].channel,
         }
-        res.status(200).json(data)
+
+        await axios({
+            method: 'post',
+            url: `${clients[state].host}/api/twitch_auth?${clients[state].store}`,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Shopify-Access-Token': `${clients[state].shopifyToken}`,
+            },
+            data:data,
+            responseType: 'json'
+        }).then(async function (response) {
+            // handle success
+            console.log("success sent twitch auth to shopify")
+            console.log(response)
+            await res.status(200).send(response)
+            
+        }).catch(async function (error) {
+            console.log("failed sent twitch auth to shopify")
+
+            await res.status(404).send({error:error})
+
+        })
+        // /api/twitch_auth
     }else{
         res.status(400).send("failed to fetch access token, code invalid")
     }
