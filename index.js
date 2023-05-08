@@ -293,9 +293,10 @@ app.get('/api/auth', (req, res) => {
     const session = req.query.session
     const host = req.query.host
     
-    console.log("username:%o",session)
-    console.log("username:%o",store)
-    var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
+    console.log("session:%o",session)
+    console.log("store:%o",store)
+    console.log("host:%o",host)
+    // var html = `<a href="https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}">connect</a>`
     const link = `https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=9egbqe7dfh8hb291qvxmhykqamhu29&redirect_uri=${redirect_uri}/api/join&scope=chat%3Aread%20chat%3Aedit%20moderator%3Amanage%3Aannouncements%20user%3Aread%3Abroadcast%20moderation%3Aread&state=${state}`;
     // res.send(html)
     // res.render(path.join(`join.html`),{link:link})
@@ -304,7 +305,8 @@ app.get('/api/auth', (req, res) => {
 
         const data = {
             message: "success",
-            link: link
+            link: link,
+            state:state
         }
         res.status(200).json(data)
     }else{
@@ -326,14 +328,14 @@ app.get('/api/join', async (req, res) => {
         await connect(access_token,state)
 
         const data = {
+            channel:clients[state].channel,
             auth_code:access_token,
             state:state,
-            channel:clients[state].channel,
         }
 
         await axios({
             method: 'post',
-            url: `${clients[state].host}/api/twitch_auth?${clients[state].store}`,
+            url: `https://${clients[state].host}/api/twitch_auth?${clients[state].store}`,
             headers: {
                 'Content-Type': 'application/json',
                 'X-Shopify-Access-Token': `${clients[state].shopifyToken}`,
