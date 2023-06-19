@@ -32,6 +32,7 @@ app.set('view engine', 'html');
 // var messages = []
 var clients = []
 var redirect_uri = "http://localhost:3000"
+redirect_uri = window.location.origin;
 var winner_host = null
 var state_winner = null
 // var redirect_uri = "http://localhost:8080"
